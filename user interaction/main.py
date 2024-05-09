@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 
-topic1 = "Способы задания булевых значений"
+topic1 = "Способы задания булевых функций"
 topic2 = "Постоение СКНФ и СДНФ"
 topic3 = "Построение полинома Жегалкина"
 topics = [topic1, topic2, topic3]
