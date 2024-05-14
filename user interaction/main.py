@@ -19,6 +19,7 @@ name = StringVar(value =" ")
 t1 = IntVar(value=1)
 t2 = IntVar(value=1)
 t3 = IntVar(value=1)
+subj = StringVar()
 
 def validate(new_value):
     return new_value == "" or new_value.isnumeric()
@@ -28,7 +29,7 @@ vcmd = (window.register(validate), '%P')
 def CreateFail(name, group, t1, t2, t3):
     file = open("info.txt", 'w')
     if name == " ": name = "Преподаватель"
-    file.write(f"{subject} {name} {group} {t1} {t2} {t3}")
+    file.write(f"{subj} {name} {group} {t1} {t2} {t3}")
     file.close()
     window.destroy()
 
@@ -39,20 +40,26 @@ def clear():
 
 
 def subject():
-    b_1 = Button(text='Дискретная математика', font=('Arial', 18), fg='black', bg="DarkSeaGreen1", command=user)
+    b_1 = Button(text='Дискретная математика', font=('Arial', 18), fg='black', bg="DarkSeaGreen1", command=lambda: user(1))
     b_1.place(x=55, y=75, width=300)
 
-    b_2 = Button(text='Математический анализ', font=('Arial', 18), bg="DarkSeaGreen1", fg='black', command=user)
+    b_2 = Button(text='Математический анализ', font=('Arial', 18), bg="DarkSeaGreen1", fg='black', command=lambda: user(2))
     b_2.place(x=55, y=140, width=300)
 
 
-def user():
+def user(s):
     b_1 = Button(text='Студент', font=('Arial', 18), fg='black', bg="DarkSeaGreen1", command=student)
     b_1.place(x=55, y=75, width=300)
 
     b_2 = Button(text='Преподаватель', font=('Arial', 18), bg="DarkSeaGreen1", fg='black', command=teacher)
     b_2.place(x=55, y=140, width=300)
 
+    global subj
+    match s:
+        case 1:
+            subj = "Дискретная математика"
+        case 2:
+            subj = "Математический анализ"
 
 def student():
     clear()
