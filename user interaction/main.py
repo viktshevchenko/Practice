@@ -86,6 +86,8 @@ def student():
     Label(window, text="Введите ФИО: ").place(x=30, y=20)
     Entry(window, textvariable=name, validate='key', width=35).place(x=160, y=20)
 
+    group.set("")
+
     common()
     Button(window, text="Сгенерировать работу", bg="DarkSeaGreen1", width=19, command=check).place(x=140, y=240)
 
@@ -94,6 +96,8 @@ def student_err():
 
     Label(window, text="Введите ФИО: ", fg='red').place(x=30, y=20)
     Entry(window, textvariable=name, validate='key', width=35).place(x=160, y=20)
+
+    group.set("")
 
     common()
     Button(window, text="Сгенерировать работу", bg="DarkSeaGreen1", width=19, command=check).place(x=140, y=240)
