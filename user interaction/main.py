@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+import random
 
 subject1 = "Дискретная математика"
 subject2 = "Математический анализ"
@@ -150,4 +151,45 @@ def common():
 
 
 subjects()
-window.mainloop()
+
+variable_2 = ['x', 'y']
+variable_3 = ['x', 'y','z']
+variable_4 = ['x', 'y', 'z', 't']
+
+boolean_operations = ['<=', '==', '!', '&&', '||', '^']
+
+def generate_function(count_var):
+    function = ""
+    var_last = ''
+    match count_var:
+        case 2:
+            for i in range(random.randint(3, 8)):
+                var = random.choice(variable_2)
+                while var == var_last:
+                    var = random.choice(variable_2)
+                function += var + " "
+                op = random.choice(boolean_operations)
+                function += op + " "
+            return function[:-3]
+        case 3:
+            for i in range(random.randint(3, 10)):
+                var = random.choice(variable_3)
+                while var == var_last:
+                    var = random.choice(variable_2)
+                function += var + " "
+                op = random.choice(boolean_operations)
+                function += op + " "
+            return function[:-3]
+        case 4:
+            for i in range(random.randint(3, 12)):
+                var = random.choice(variable_2)
+                while var == var_last:
+                    var = random.choice(variable_4)
+                function += var + " "
+                op = random.choice(boolean_operations)
+                function += op + " "
+            return function[:-3]
+        case _:
+            Label()
+
+window.mainloop()#in end of proram
