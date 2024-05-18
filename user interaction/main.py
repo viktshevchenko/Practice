@@ -33,6 +33,13 @@ count2 = IntVar(value=2) #number of variables of topic2
 count3 = IntVar(value=2) #number of variables of topic3
 subject = StringVar()
 
+variable_2 = ['x', 'y']
+variable_3 = ['x', 'y', 'z']
+variable_4 = ['x', 'y', 'z', 't']
+
+boolean_operations = ['<=', '==', '&', '|', '^']
+sign = ['', '~']
+
 def validate(new_value):
     return new_value == "" or new_value.isnumeric()
 
@@ -44,7 +51,6 @@ def check():
     else:
         CreateFail()
         #window.destroy()
-
 
 def CreateFail():
     file = open("info.txt", 'w')
@@ -125,7 +131,6 @@ def themes_subj1():
     ttk.Combobox(values=["2", "3", "4"], textvariable=count2, width=8).place(x=320, y=140)
     ttk.Combobox(values=["2", "3", "4"], textvariable=count3, width=8).place(x=320, y=180)
 
-
 def themes_subj2():
     Label(window, text="Наивысшая\n степень").place(x=320, y=50)
 
@@ -136,7 +141,6 @@ def themes_subj2():
     Entry(window, textvariable=count1, validate='key', validatecommand=vcmd, width=8).place(x=320, y=100)
     Entry(window, textvariable=count2, validate='key', validatecommand=vcmd, width=8).place(x=320, y=140)
     Entry(window, textvariable=count3, validate='key', validatecommand=vcmd, width=8).place(x=320, y=180)
-
 
 def common():
     if subject == subject1:
@@ -151,12 +155,7 @@ def common():
 
 
 subjects()
-
-variable_2 = ['x', 'y']
-variable_3 = ['x', 'y','z']
-variable_4 = ['x', 'y', 'z', 't']
-
-boolean_operations = ['<=', '==', '!', '&&', '||', '^']
+window.mainloop()
 
 def generate_function(count_var):
     function = ""
@@ -164,32 +163,260 @@ def generate_function(count_var):
     match count_var:
         case 2:
             for i in range(random.randint(3, 8)):
+                negation = random.choice(sign)
                 var = random.choice(variable_2)
                 while var == var_last:
                     var = random.choice(variable_2)
-                function += var + " "
+                var_last = var
+                function += negation + var + " "
                 op = random.choice(boolean_operations)
                 function += op + " "
-            return function[:-3]
         case 3:
             for i in range(random.randint(3, 10)):
+                negation = random.choice(sign)
                 var = random.choice(variable_3)
                 while var == var_last:
                     var = random.choice(variable_2)
-                function += var + " "
+                var_last = var
+                function += negation + var + " "
                 op = random.choice(boolean_operations)
                 function += op + " "
-            return function[:-3]
         case 4:
             for i in range(random.randint(3, 12)):
+                negation = random.choice(sign)
                 var = random.choice(variable_2)
                 while var == var_last:
                     var = random.choice(variable_4)
-                function += var + " "
+                var_last = var
+                function += negation + var + " "
                 op = random.choice(boolean_operations)
                 function += op + " "
-            return function[:-3]
         case _:
-            Label()
+            if count_var < 2:
+                return generate_function(2)
+            elif count_var > 4:
+                return generate_function(4)
+    function = function[:-3]
+    value_bool_func = truth_table(str(function), count_var)
 
-window.mainloop()#in end of proram
+    while (not '0' in value_bool_func) or (not '1' in value_bool_func) or '-' in value_bool_func:
+        function = generate_function(count_var)
+        value_bool_func = truth_table(str(function), count_var)
+    return function
+
+def truth_table(func, count_var):
+    value = ''
+    match count_var:
+        case 2:
+            #print('x y f')
+            for x in range(2):
+                for y in range(2):
+                    f = eval(func)
+                    #print(x, y, int(f))
+                    value += str(int(f))
+        case 3:
+            #print('x y z f')
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        f = eval(func)
+                        #print(x, y, z, int(f))
+                        value += str(int(f))
+        case 4:
+            #print('x y z t f')
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        for t in range(2):
+                            f = eval(func)
+                            #print(x, y, z, t, int(f))
+                            value += str(int(f))
+        case _:
+            if count_var < 2:
+                return truth_table(func, 2)
+            elif count_var > 4:
+                return truth_table(func, 4)
+    return value
+
+def sdnf(bool_func, count_var):
+    value_bool_func = truth_table(str(bool_func), count_var)
+    result = ''
+    i = 0
+    match count_var:
+        case 2:
+            for x in range(2):
+                for y in range(2):
+                    if value_bool_func[i] == '0':
+                        result += '('
+                        if x == 0:
+                            result += 'x & '
+                        elif x == 1:
+                            result += '~x & '
+                        if y == 0:
+                            result += 'y'
+                        elif y == 1:
+                            result += '~y'
+                        result += ') | '
+                    i += 1
+        case 3:
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        if value_bool_func[i] == '0':
+                            result += '('
+                            if x == 0:
+                                result += 'x & '
+                            elif x == 1:
+                                result += '~x & '
+                            if y == 0:
+                                result += 'y & '
+                            elif y == 1:
+                                result += '~y & '
+                            if z == 0:
+                                result += 'z'
+                            elif z == 1:
+                                result += '~z'
+                            result += ') | '
+                        i += 1
+        case 4:
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        for t in range(2):
+                            if value_bool_func[i] == '0':
+                                result += '('
+                                if x == 0:
+                                    result += 'x & '
+                                elif x == 1:
+                                    result += '~x & '
+                                if y == 0:
+                                    result += 'y & '
+                                elif y == 1:
+                                    result += '~y & '
+                                if z == 0:
+                                    result += 'z & '
+                                elif z == 1:
+                                    result += '~z & '
+                                if t == 0:
+                                    result += 't'
+                                elif t == 1:
+                                    result += '~t'
+                                result += ') | '
+                            i += 1
+    return result[:-3]
+
+def sknf(bool_func, count_var):
+    value_bool_func = truth_table(str(bool_func), count_var)
+    result = ''
+    i = 0
+    match count_var:
+        case 2:
+            for x in range(2):
+                for y in range(2):
+                    if value_bool_func[i] == '1':
+                        result += '('
+                        if x == 1:
+                            result += 'x | '
+                        elif x == 0:
+                            result += '~x | '
+                        if y == 1:
+                            result += 'y'
+                        elif y == 0:
+                            result += '~y'
+                        result += ') & '
+                    i += 1
+        case 3:
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        if value_bool_func[i] == '1':
+                            result += '('
+                            if x == 1:
+                                result += 'x | '
+                            elif x == 0:
+                                result += '~x | '
+                            if y == 1:
+                                result += 'y | '
+                            elif y == 0:
+                                result += '~y | '
+                            if z == 1:
+                                result += 'z'
+                            elif z == 0:
+                                result += '~z'
+                            result += ') & '
+                        i += 1
+        case 4:
+            for x in range(2):
+                for y in range(2):
+                    for z in range(2):
+                        for t in range(2):
+                            if value_bool_func[i] == '1':
+                                result += '('
+                                if x == 1:
+                                    result += 'x | '
+                                elif x == 0:
+                                    result += '~x | '
+                                if y == 1:
+                                    result += 'y | '
+                                elif y == 0:
+                                    result += '~y | '
+                                if z == 1:
+                                    result += 'z | '
+                                elif z == 0:
+                                    result += '~z | '
+                                if t == 1:
+                                    result += 't'
+                                elif t == 0:
+                                    result += '~t'
+                                result += ') & '
+                            i += 1
+    return result[:-3]
+
+def polinom_Zhegalkina(bool_func, count_var):
+    value_bool_func = truth_table(str(bool_func), count_var)
+    func_sdnf = sdnf(value_bool_func, count_var)
+    if '~x' in func_sdnf:
+        func_sdnf = func_sdnf.replace('~x', '(1 ^ x)')
+    if '~y' in func_sdnf:
+        func_sdnf = func_sdnf.replace('~y', '(1 ^ y)')
+    if '~z' in func_sdnf:
+        func_sdnf = func_sdnf.replace('~z', '(1 ^ z)')
+    if '~t' in func_sdnf:
+        func_sdnf = func_sdnf.replace('~t', '(1 ^ t)')
+    if '|' in func_sdnf:
+        func_sdnf = func_sdnf.replace('|', '^')
+    return func_sdnf
+
+
+if subject == subject1:
+    for i in range(theme1.get()): # генерирует 1ую тему
+        bool_func = generate_function(count1.get()) # задание
+        value_bool_func = truth_table(str(bool_func), count1.get()) # ответ
+        # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
+        # проверка
+        """file = open("1.txt", 'a')
+        file.write(f"{i+1}. {bool_func}\n"
+                   f"{value_bool_func}\n\n")
+        file.close()"""
+
+    for i in range(theme2.get()): # генерирует 2ую тему
+        bool_func = generate_function(count2.get()) # задание
+        SKNF = sknf(bool_func, count2.get()) # ответ
+        SDNF = sdnf(bool_func, count2.get())  # ответ
+        # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
+        # проверка
+        """file = open("2.txt", 'a')
+        file.write(f"{i+1}. {bool_func}\n"
+                   f"{SKNF}\n"
+                   f"{SDNF}\n\n")
+        file.close()"""
+
+    for i in range(theme3.get()): # генерирует 3ью тему
+        bool_func = str(generate_function(count3.get())) # задание
+        polinom = polinom_Zhegalkina(bool_func, count3.get()) # ответ
+        # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
+        # проверка
+        """file = open("3.txt", 'a')
+        file.write(f"{i+1}. {bool_func}\n"
+                   f"{polinom}\n\n")
+        file.close()"""
