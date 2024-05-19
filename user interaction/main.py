@@ -239,7 +239,7 @@ def truth_table(func, count_var):
     return value
 
 def sdnf(bool_func, count_var):
-    value_bool_func = truth_table(str(bool_func), count_var)
+    value_bool_func = str(truth_table(str(bool_func), count_var))
     result = ''
     i = 0
     match count_var:
@@ -374,7 +374,7 @@ def sknf(bool_func, count_var):
 
 def polinom_Zhegalkina(bool_func, count_var):
     value_bool_func = truth_table(str(bool_func), count_var)
-    func_sdnf = sdnf(value_bool_func, count_var)
+    func_sdnf = str(sdnf(value_bool_func, count_var))
     if '~x' in func_sdnf:
         func_sdnf = func_sdnf.replace('~x', '(1 ^ x)')
     if '~y' in func_sdnf:
@@ -394,10 +394,10 @@ if subject == subject1:
         value_bool_func = truth_table(str(bool_func), count1.get()) # ответ
         # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
         # проверка
-        """file = open("1.txt", 'a')
+        file = open("1.txt", 'a')
         file.write(f"{i+1}. {bool_func}\n"
                    f"{value_bool_func}\n\n")
-        file.close()"""
+        file.close()
 
     for i in range(theme2.get()): # генерирует 2ую тему
         bool_func = generate_function(count2.get()) # задание
@@ -405,18 +405,18 @@ if subject == subject1:
         SDNF = sdnf(bool_func, count2.get())  # ответ
         # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
         # проверка
-        """file = open("2.txt", 'a')
+        file = open("2.txt", 'a')
         file.write(f"{i+1}. {bool_func}\n"
                    f"{SKNF}\n"
                    f"{SDNF}\n\n")
-        file.close()"""
+        file.close()
 
     for i in range(theme3.get()): # генерирует 3ью тему
         bool_func = str(generate_function(count3.get())) # задание
-        polinom = polinom_Zhegalkina(bool_func, count3.get()) # ответ
+        polinom = str(polinom_Zhegalkina(bool_func, count3.get())) # ответ
         # здесь можно с ними что-то делать (например, записывать в бд или в теховский файл
         # проверка
-        """file = open("3.txt", 'a')
+        file = open("3.txt", 'a')
         file.write(f"{i+1}. {bool_func}\n"
                    f"{polinom}\n\n")
-        file.close()"""
+        file.close()
