@@ -18,7 +18,7 @@ try:
         amount_tasks = 0
         if 'Преподаватель' in info_file:
             flag = 1
-            subject = info_file[0] + info_file[1]
+            subject = info_file[0] + ' ' + info_file[1]
             group = info_file[3]
             bool_f = [info_file[4], info_file[5]] # первое число кол-во заданий, второк кол-во переменных
             sknf_sdnf_f = [info_file[6], info_file[7]]
@@ -33,7 +33,7 @@ try:
             amount_tasks = int(bool_f[0]) + int(sknf_sdnf_f[0]) + int(zegalkin_f[0])  # кол-во заданий в варианте
         else:
             subject = info_file[0] + info_file[1]
-            name = info_file[2] + info_file[3] + info_file[4]
+            name = info_file[2] + ' ' + info_file[3] + ' ' + info_file[4]
 
             bool_f = [info_file[5], info_file[6]] 
             sknf_sdnf_f = [info_file[7], info_file[8]]
@@ -42,47 +42,117 @@ try:
             amount_tasks = int(bool_f[0]) + int(sknf_sdnf_f[0]) + int(zegalkin_f[0]) #кол-во заданий в варианте
         
     if flag == 0:
+
         variant = []
+        tasks_and_answers = []
+        answers = []
+        id_template_list = []
+        with conn.cursor() as cursor:
+            querry = "select id from students where name = %s"
+            cursor.execute(querry, (name,))
+            id_student_tuple = cursor.fetchone()
+            id_student = id_student_tuple[0]
+
+        bool_f_first_iter = True
+
         for i in range(int(bool_f[0])):
+            if bool_f_first_iter == True:
+                variant.append('Способы задания булевых функций')
+                bool_f_first_iter == False
+                with conn.cursor() as cursor:
+                    querry = "select id from templates where name = %s"
+                    name = 'Способы задания булевых функций'
+                    cursor.execute(querry, (name,))
+                    id_template_tuple = cursor.fetchone()
+                    id_template = id_template_tuple[0]
+                    id_template_list.append(id_template)
+
             with conn.cursor() as cursor:
-                querry = "select text from templates where name = %s"
+                querry = "select text, id from templates where name = %s"
                 name = 'Способы задания булевых функций'
                 cursor.execute(querry, (name,))
-                task_tuple = cursor.fetchone()
-                task = ', '.join(task_tuple)
+                task_tuple = cursor.fetchall()
+                task = task_tuple[0][0]
+                #id_template_list.append(task_tuple[0][1])
                 task = task[:-1] + bool_f[1] + task[-1:]
                 func_bool = eval(task)
                 variant.append(func_bool)
+                answers.append(truth_table(func_bool, int(bool_f[1])))
+
+        zegalkin_first_iter = True
 
         for i in range(int(zegalkin_f[0])):
+            if zegalkin_first_iter == True:
+                variant.append('Построение полинома Жегалкина')
+                zegalkin_first_iter = False
             with conn.cursor() as cursor:
-                querry = "select text from templates where name = %s"
+                querry = "select text, id from templates where name = %s"
                 name = 'Построение полинома Жегалкина'
                 cursor.execute(querry, (name,))
-                task_tuple = cursor.fetchone()
-                task = ', '.join(task_tuple)
+                task_tuple = cursor.fetchall()
+                task = task_tuple[0][0]
+                id_template_list.append(task_tuple[0][1])
                 task = task[:-1] + zegalkin_f[1] + task[-1:]
                 func_bool = eval(task)
                 variant.append(func_bool)
+                answers.append(polinom_Zhegalkina(func_bool, int(zegalkin_f[1])))
+
+        sknf_sdnf_first_iter = True
 
         for i in range(int(sknf_sdnf_f[0])):
+            if sknf_sdnf_first_iter == True:
+                variant.append('Построение СКНФ и СДНФ')
             with conn.cursor() as cursor:
-                querry = "select text from templates where name = %s"
+                querry = "select text, id from templates where name = %s"
                 name_sknf = 'Построение СКНФ'
                 name_sdnf = 'Построение СДНФ'
                 cursor.execute(querry, (name_sknf,))
-                task_tuple = cursor.fetchone()
-                task = ', '.join(task_tuple)
+                task_tuple = cursor.fetchall()
+                task = task_tuple[0][0]
+                id_template_list.append(task_tuple[0][1])
+
                 task = task[:-1] + sknf_sdnf_f[1] + task[-1:]
                 func_bool = eval(task)
                 variant.append(func_bool)
+
+                answers.append(sknf(func_bool, int(sknf_sdnf_f[1])))
+
                 cursor.execute(querry, (name_sdnf,))
-                task_tuple = cursor.fetchone()
-                task = ', '.join(task_tuple)
+                task_tuple = cursor.fetchall()
+
+
+                task = task_tuple[0][0]
+                id_template_list.append(task_tuple[0][1])
+
                 task = task[:-1] + sknf_sdnf_f[1] + task[-1:]
                 func_bool = eval(task)
                 variant.append(func_bool)
-###############
+                answers.append(sdnf(func_bool, int(sknf_sdnf_f[1])))
+
+        variant = ','.join(map(str, variant))
+        answers = ','.join(map(str, answers))
+
+        with conn.cursor() as cursor:
+            querry = "insert into variants (id_template, text, answers, num) values (%s, %s, %s, %s) returning id"
+
+            cursor.execute(querry, (id_template_list, variant, answers, amount_tasks))
+
+            id_var_tuple = cursor.fetchall()
+            id_var = id_var_tuple[0][0]
+            querry2 = "insert into student_var(id_student, id_var, data) values (%s, %s, %s) returning id"
+            event_date = datetime.now()
+            cursor.execute(querry2, (id_student, id_var, event_date))
+            id_stud_var_tuple = cursor.fetchall()
+            id_stud_var = id_stud_var_tuple[0][0]
+            i = 0
+            while i < len(tasks_and_answers):
+                querry3 = "insert into tasks (id_stud_var, text_task, text_ans) values (%s, %s, %s)"
+                cursor.execute(querry3, (id_stud_var, tasks_and_answers[i], tasks_and_answers[i+1]))
+                i += 2
+
+
+
+
 
     else:
 
@@ -144,7 +214,8 @@ try:
                     func_bool = eval(task)
                     variant.append(func_bool)
                     #генерация ответа
-                    ans = truth_table(func_bool, int(bool_f[1]))
+                    count_var = int(bool_f[1])
+                    ans = truth_table(func_bool, count_var)
                     answers.append(ans)
                     tasks_and_answers.append(func_bool)
                     tasks_and_answers.append((ans))
@@ -174,7 +245,8 @@ try:
                     task = task[:-1] + zegalkin_f[1] + task[-1:]
                     func_bool = eval(task)
                     variant.append(func_bool)
-                    ans = polinom_Zhegalkina(func_bool, int(zegalkin_f[1]))
+                    count_var = int(zegalkin_f[1])
+                    ans = polinom_Zhegalkina(func_bool, count_var)
                     answers.append(ans)
                     tasks_and_answers.append(func_bool)
                     tasks_and_answers.append((ans))
@@ -215,7 +287,8 @@ try:
                     task = task[:-1] + str(sknf_sdnf_f[1]) + task[-1:]
                     func_bool = eval(task)
                     variant.append(func_bool)
-                    ans = sknf(func_bool, int(sknf_sdnf_f[1]))
+                    count_var = int(sknf_sdnf_f[1])
+                    ans = sknf(func_bool, count_var)
                     answers.append(ans)
 
                     tasks_and_answers.append(func_bool)
@@ -228,15 +301,15 @@ try:
                     task = task[:-1] + str(sknf_sdnf_f[1]) + task[-1:]
                     func_bool = eval(task)
                     variant.append(func_bool)
-                    ans = sdnf(func_bool, int(sknf_sdnf_f[1]))
+                    count_var = int(sknf_sdnf_f[1])
+                    ans = sdnf(func_bool, count_var)
                     answers.append(ans)
 
                     tasks_and_answers.append(func_bool)
                     tasks_and_answers.append(ans)
 
-
-            variant = ' '.join(variant)
-            answers= ' '.join(answers)
+            variant = ','.join(map(str, variant))
+            answers = ','.join(map(str, answers))
 
             with conn.cursor() as cursor:
 
