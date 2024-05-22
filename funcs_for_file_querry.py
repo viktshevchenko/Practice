@@ -48,10 +48,10 @@ def generate_function(count_var):
     function = function[:-3]
     value_bool_func = truth_table(str(function), count_var)
 
-    while (not '0' in value_bool_func) or (not '1' in value_bool_func) or '-' in value_bool_func:
+    while (not '0' in value_bool_func) or (not '1' in value_bool_func) or '-' in value_bool_func or (value_bool_func[0] == '0'):
         function = generate_function(count_var)
         value_bool_func = truth_table(str(function), count_var)
-    return function
+    return str(function)
 
 def truth_table(func, count_var):
     value = ''
@@ -85,7 +85,7 @@ def truth_table(func, count_var):
                 return truth_table(func, 2)
             elif count_var > 4:
                 return truth_table(func, 4)
-    return value
+    return str(value)
 
 def sdnf(bool_func, count_var):
     value_bool_func = str(truth_table(str(bool_func), count_var))
@@ -152,7 +152,7 @@ def sdnf(bool_func, count_var):
                                     result += '~t'
                                 result += ') | '
                             i += 1
-    return result[:-3]
+    return str(result[:-3])
 
 def sknf(bool_func, count_var):
     value_bool_func = truth_table(str(bool_func), count_var)
@@ -219,11 +219,11 @@ def sknf(bool_func, count_var):
                                     result += '~t'
                                 result += ') & '
                             i += 1
-    return result[:-3]
+    return str(result[:-3])
 
 def polinom_Zhegalkina(bool_func, count_var):
-    value_bool_func = truth_table(str(bool_func), count_var)
-    func_sdnf = str(sdnf(value_bool_func, count_var))
+    value_bool_func = truth_table(bool_func, count_var)
+    func_sdnf = sdnf(value_bool_func, count_var)
     if '~x' in func_sdnf:
         func_sdnf = func_sdnf.replace('~x', '(1 ^ x)')
     if '~y' in func_sdnf:
@@ -234,4 +234,4 @@ def polinom_Zhegalkina(bool_func, count_var):
         func_sdnf = func_sdnf.replace('~t', '(1 ^ t)')
     if '|' in func_sdnf:
         func_sdnf = func_sdnf.replace('|', '^')
-    return func_sdnf
+    return str(func_sdnf)
